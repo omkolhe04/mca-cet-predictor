@@ -1,0 +1,246 @@
+/* ==========================================================
+   VidyaNITI — Design Tokens
+   White background, blue theme, rounded cards, no gradients,
+   no flashy animation. Mobile-first. Built for a data-heavy,
+   trust-driven exam utility product — not a marketing site.
+   ========================================================== */
+
+:root {
+  /* Color */
+  --vn-blue-900: #12305c;
+  --vn-blue-700: #1e5aa8;
+  --vn-blue-600: #2569c2;
+  --vn-blue-100: #eaf2fc;
+  --vn-blue-50: #f5f9fe;
+
+  --vn-ink: #16233d;
+  --vn-ink-muted: #5b6b82;
+  --vn-border: #e2e8f1;
+
+  --vn-white: #ffffff;
+
+  --vn-success: #1e8e5a;
+  --vn-success-bg: #e9f7f0;
+  --vn-warning: #b3790f;
+  --vn-warning-bg: #fbf1e0;
+  --vn-danger: #c74b4b;
+  --vn-danger-bg: #fbeaea;
+
+  /* Type */
+  --vn-font-display: 'Manrope', system-ui, -apple-system, sans-serif;
+  --vn-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Radius / elevation */
+  --vn-radius-sm: 8px;
+  --vn-radius-md: 14px;
+  --vn-radius-lg: 20px;
+  --vn-shadow-card: 0 1px 2px rgba(18, 48, 92, 0.06), 0 4px 16px rgba(18, 48, 92, 0.06);
+
+  /* Spacing scale */
+  --vn-space-1: 4px;
+  --vn-space-2: 8px;
+  --vn-space-3: 16px;
+  --vn-space-4: 24px;
+  --vn-space-5: 40px;
+  --vn-space-6: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--vn-font-body);
+  color: var(--vn-ink);
+  background-color: var(--vn-white);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.vn-display {
+  font-family: var(--vn-font-display);
+  color: var(--vn-blue-900);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--vn-blue-700);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--vn-blue-900);
+}
+
+/* Respect reduced-motion preference; the brief also bans flashy
+   animation entirely, so transitions stay short and functional. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   Buttons — override Bootstrap defaults to match the blue theme
+   --------------------------------------------------------- */
+.btn-vn-primary {
+  background-color: var(--vn-blue-700);
+  border: 1px solid var(--vn-blue-700);
+  color: var(--vn-white);
+  border-radius: var(--vn-radius-sm);
+  font-weight: 600;
+  padding: 0.7rem 1.5rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-vn-primary:hover,
+.btn-vn-primary:focus {
+  background-color: var(--vn-blue-900);
+  border-color: var(--vn-blue-900);
+  color: var(--vn-white);
+}
+
+.btn-vn-outline {
+  background-color: transparent;
+  border: 1px solid var(--vn-blue-700);
+  color: var(--vn-blue-700);
+  border-radius: var(--vn-radius-sm);
+  font-weight: 600;
+  padding: 0.7rem 1.5rem;
+}
+
+.btn-vn-outline:hover {
+  background-color: var(--vn-blue-100);
+  color: var(--vn-blue-900);
+}
+
+/* Visible keyboard focus everywhere — required quality floor */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--vn-blue-600);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------
+   Cards — rounded, soft shadow, generous internal spacing
+   --------------------------------------------------------- */
+.vn-card {
+  background-color: var(--vn-white);
+  border: 1px solid var(--vn-border);
+  border-radius: var(--vn-radius-md);
+  box-shadow: var(--vn-shadow-card);
+  padding: var(--vn-space-4);
+}
+
+/* ---------------------------------------------------------
+   Chance badges — reused across result cards (Phase 4/5)
+   --------------------------------------------------------- */
+.vn-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.vn-badge-success {
+  background-color: var(--vn-success-bg);
+  color: var(--vn-success);
+}
+
+.vn-badge-warning {
+  background-color: var(--vn-warning-bg);
+  color: var(--vn-warning);
+}
+
+.vn-badge-danger {
+  background-color: var(--vn-danger-bg);
+  color: var(--vn-danger);
+}
+
+/* ---------------------------------------------------------
+   Layout helpers
+   --------------------------------------------------------- */
+.vn-section {
+  padding-top: var(--vn-space-6);
+  padding-bottom: var(--vn-space-6);
+}
+
+.vn-container-narrow {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ---------------------------------------------------------
+   Landing page — hero, steps, features, CTA
+   --------------------------------------------------------- */
+.vn-eyebrow {
+  font-family: var(--vn-font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vn-blue-700);
+}
+
+.vn-hero-title {
+  font-family: var(--vn-font-display);
+  font-weight: 800;
+  color: var(--vn-blue-900);
+  font-size: 2.25rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 992px) {
+  .vn-hero-title {
+    font-size: 2.75rem;
+  }
+}
+
+.vn-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--vn-radius-sm);
+  background-color: var(--vn-blue-100);
+  color: var(--vn-blue-700);
+  font-family: var(--vn-font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.vn-feature-icon {
+  display: block;
+  font-size: 1.75rem;
+  color: var(--vn-blue-700);
+  margin-bottom: var(--vn-space-2);
+}
+
+.vn-cta-banner {
+  background-color: var(--vn-blue-700);
+  border-radius: var(--vn-radius-lg);
+  padding: var(--vn-space-6) var(--vn-space-4);
+}
+

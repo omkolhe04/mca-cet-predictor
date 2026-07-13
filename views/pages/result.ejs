@@ -1,0 +1,104 @@
+<section class="vn-section pb-3">
+  <div class="container text-center">
+    <p class="vn-eyebrow mb-2">Your Result</p>
+    <h1 class="h3 mb-2">MCA CET Prediction Result</h1>
+    <% if (snapshot && snapshot.totalCollegesEvaluated > 0) { %>
+      <p style="color: var(--vn-ink-muted);">
+        Percentile <%= prediction.percentile %> &middot; Evaluated against
+        <%= snapshot.examYear %> CAP cutoff data across <%= snapshot.totalCollegesEvaluated %> colleges
+        &middot; Eligible categories: <%= snapshot.eligibleCategories.join(', ') %>
+      </p>
+    <% } %>
+  </div>
+</section>
+
+<% if (!snapshot || snapshot.totalCollegesEvaluated === 0) { %>
+
+  <!-- ================= Empty state ================= -->
+  <section class="vn-section pt-0">
+    <div class="container vn-container-narrow">
+      <div class="vn-card text-center">
+        <i class="bi bi-hourglass-split" style="font-size: 2rem; color: var(--vn-blue-700);"></i>
+        <h2 class="h5 mt-3 mb-2">Results aren't ready yet</h2>
+        <p class="mb-3" style="color: var(--vn-ink-muted);">
+          <%= (snapshot && snapshot.note) || 'Official CAP cutoff data has not been loaded yet.' %>
+          Your details are saved — check back once cutoff data is available and results will
+          appear here automatically.
+        </p>
+        <a href="/" class="btn btn-vn-outline">Back to Home</a>
+      </div>
+    </div>
+  </section>
+
+<% } else { %>
+
+  <!-- ================= Round tabs ================= -->
+  <section class="vn-section pt-0">
+    <div class="container">
+      <ul class="nav nav-tabs" id="roundTabs" role="tablist">
+        <% CAP_ROUNDS.forEach(function (roundCode, idx) { %>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link <%= idx === 0 ? 'active' : '' %>"
+              id="tab-<%= roundCode %>"
+              data-bs-toggle="tab"
+              data-bs-target="#pane-<%= roundCode %>"
+              type="button"
+              role="tab"
+              aria-controls="pane-<%= roundCode %>"
+              aria-selected="<%= idx === 0 ? 'true' : 'false' %>"
+            >
+              CAP Round <%= idx + 1 %>
+            </button>
+          </li>
+        <% }) %>
+      </ul>
+
+      <div class="tab-content pt-4" id="roundTabsContent">
+        <% CAP_ROUNDS.forEach(function (roundCode, idx) { %>
+          <div
+            class="tab-pane fade <%= idx === 0 ? 'show active' : '' %>"
+            id="pane-<%= roundCode %>"
+            role="tabpanel"
+            aria-labelledby="tab-<%= roundCode %>"
+          >
+            <%- include('../partials/result/round-panel', {
+              roundCode,
+              roundData: snapshot.rounds[roundCode],
+              dreamCollege: snapshot.dreamCollege,
+              collegeDetails,
+              CHANCE_BUCKET_META
+            }) %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Recommended preference order ================= -->
+  <section class="vn-section" style="background-color: var(--vn-blue-50);">
+    <div class="container">
+      <div class="text-center mb-4">
+        <p class="vn-eyebrow mb-2">Use This For Your CAP Option Form</p>
+        <h2 class="h4 mb-0">Recommended Preference Order</h2>
+      </div>
+      <%- include('../partials/result/preference-order', {
+        recommendedPreferenceOrder: snapshot.recommendedPreferenceOrder,
+        CHANCE_BUCKET_META
+      }) %>
+    </div>
+  </section>
+
+  <!-- ================= PDF download ================= -->
+  <section class="vn-section">
+    <div class="container text-center">
+      <a href="/predict/<%= prediction.id %>/pdf" class="btn btn-vn-primary btn-lg">
+        Download PDF Report
+      </a>
+      <p class="small mt-2 mb-0" style="color: var(--vn-ink-muted);">
+        A printable copy of this result, including your CAP preference order.
+      </p>
+    </div>
+  </section>
+
+<% } %>

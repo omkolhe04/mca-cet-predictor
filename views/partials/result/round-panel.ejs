@@ -1,0 +1,44 @@
+<% if (dreamCollege) { %>
+  <%- include('./dream-college-card', { dreamCollege, roundCode, CHANCE_BUCKET_META }) %>
+<% } %>
+
+<% ['veryHigh', 'high', 'moderate', 'low'].forEach(function (bucketKey) { %>
+  <% const meta = CHANCE_BUCKET_META[bucketKey]; const list = roundData[bucketKey]; %>
+  <div class="mb-4">
+    <h3 class="h6 mb-3 d-flex align-items-center gap-2">
+      <span class="vn-badge <%= meta.badgeClass %>"><%= meta.label %></span>
+      <span style="color: var(--vn-ink-muted); font-weight: 500;">
+        <%= list.length %> college<%= list.length === 1 ? '' : 's' %>
+      </span>
+    </h3>
+    <% if (list.length === 0) { %>
+      <p class="small" style="color: var(--vn-ink-muted);">No colleges in this band for this round.</p>
+    <% } else { %>
+      <div class="row g-3">
+        <% list.forEach(function (entry) { %>
+          <%- include('./college-card', { entry, chanceKey: bucketKey, collegeDetails, CHANCE_BUCKET_META }) %>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+<% }) %>
+
+<% if (roundData.noData.length > 0) { %>
+  <div class="mt-4">
+    <button
+      class="btn btn-link btn-sm p-0 text-decoration-none"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#noData-<%= roundCode %>"
+    >
+      Show <%= roundData.noData.length %> college<%= roundData.noData.length === 1 ? '' : 's' %> with no cutoff data for this round &rarr;
+    </button>
+    <div class="collapse mt-2" id="noData-<%= roundCode %>">
+      <ul class="small mb-0 ps-3" style="color: var(--vn-ink-muted);">
+        <% roundData.noData.forEach(function (entry) { %>
+          <li><%= entry.collegeName %><%= entry.city ? ' — ' + entry.city : '' %></li>
+        <% }) %>
+      </ul>
+    </div>
+  </div>
+<% } %>
