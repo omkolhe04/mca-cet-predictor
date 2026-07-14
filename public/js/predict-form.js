@@ -65,13 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const code = button.dataset.examCode;
       const name = button.dataset.examName;
 
-      // Update button styles: selected button primary, rest outline.
+      // Update card styles: selected card gets the highlighted
+      // treatment, rest return to their default unselected look.
       examButtons.forEach((btn) => {
-        btn.classList.remove('btn-vn-primary');
-        btn.classList.add('btn-vn-outline');
+        btn.classList.remove('vn-exam-card-selected');
       });
-      button.classList.remove('btn-vn-outline');
-      button.classList.add('btn-vn-primary');
+      button.classList.add('vn-exam-card-selected');
 
       if (examTypeCodeInput) {
         examTypeCodeInput.value = code;

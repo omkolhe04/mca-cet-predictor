@@ -2,6 +2,31 @@
   <%- include('./dream-college-card', { dreamCollege, roundCode, CHANCE_BUCKET_META }) %>
 <% } %>
 
+<%
+  // Chance overview — total colleges in this round (across all
+  // 4 buckets) used to compute each bar's proportional width.
+  const bucketOrder = ['veryHigh', 'high', 'moderate', 'low'];
+  const bucketFillClass = { veryHigh: 'vn-chance-fill-success', high: 'vn-chance-fill-success', moderate: 'vn-chance-fill-warning', low: 'vn-chance-fill-danger' };
+  const roundTotal = bucketOrder.reduce(function (sum, key) { return sum + roundData[key].length; }, 0);
+%>
+<% if (roundTotal > 0) { %>
+  <div class="vn-card mb-4">
+    <p class="small fw-semibold mb-3" style="color: var(--vn-ink-muted);">Chance Overview — This Round</p>
+    <div class="vn-chance-overview">
+      <% bucketOrder.forEach(function (bucketKey) { %>
+        <% const meta = CHANCE_BUCKET_META[bucketKey]; const count = roundData[bucketKey].length; const pct = roundTotal > 0 ? Math.round((count / roundTotal) * 100) : 0; %>
+        <div class="vn-chance-bar-row">
+          <span class="vn-chance-bar-label"><%= meta.label %></span>
+          <div class="vn-chance-bar-track">
+            <div class="vn-chance-bar-fill <%= bucketFillClass[bucketKey] %>" style="width: <%= pct %>%;"></div>
+          </div>
+          <span class="vn-chance-bar-count"><%= count %></span>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+<% } %>
+
 <% ['veryHigh', 'high', 'moderate', 'low'].forEach(function (bucketKey) { %>
   <% const meta = CHANCE_BUCKET_META[bucketKey]; const list = roundData[bucketKey]; %>
   <div class="mb-4">

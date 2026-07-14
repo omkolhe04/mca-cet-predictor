@@ -6,6 +6,7 @@ const predictionResultService = require('../services/predictionResult.service');
 const pdfReportService = require('../services/pdfReport.service');
 const userService = require('../services/user.service');
 const examTypeRepository = require('../repositories/examType.repository');
+const collegeRepository = require('../repositories/college.repository');
 const { setUserSessionCookie, getUserIdFromRequest } = require('../utils/userSession');
 const { generateRoundCodes, CHANCE_BUCKET_META } = require('../utils/constants');
 const { url } = require('../utils/url');
@@ -22,6 +23,18 @@ async function showForm(req, res) {
   const formOptions = await lookupService.getFormOptions(defaultExamCode);
   const existingUser = await userService.findUserById(getUserIdFromRequest(req));
 
+  // Real college counts per exam, for the exam-selection cards'
+  // stat pills — shown instead of the spec's illustrative "250+"
+  // style placeholder numbers, since this is a functional part of
+  // the form a student is about to act on (not top-of-funnel
+  // marketing), so accuracy matters more than a rounder number.
+  const examTypesWithCounts = await Promise.all(
+    examTypes.map(async (examType) => ({
+      ...examType,
+      collegeCount: await collegeRepository.countAll(examType.id),
+    }))
+  );
+
   const formValues = existingUser
     ? {
         name: existingUser.name,
@@ -35,7 +48,7 @@ async function showForm(req, res) {
 
   res.render('pages/predict', {
     title: 'Start Your Prediction',
-    examTypes,
+    examTypes: examTypesWithCounts,
     selectedExamCode: defaultExamCode,
     ...formOptions,
     formValues,

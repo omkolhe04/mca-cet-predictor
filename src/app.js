@@ -12,6 +12,7 @@ const env = require('./config/env');
 const logger = require('./utils/logger');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 const { url } = require('./utils/url');
+const { icon } = require('./utils/icons');
 const routes = require('./routes');
 
 const app = express();
@@ -85,6 +86,13 @@ app.use((req, res, next) => {
   res.locals.appName = env.appName;
   res.locals.currentPath = req.path;
   res.locals.url = url;
+  res.locals.icon = icon;
+  // Success confirmation banner (e.g. "Exam type created") — set
+  // by appending ?success=... to a redirect target. Read here so
+  // every view can show it consistently without each controller
+  // needing its own rendering logic; harmless on pages that never
+  // set it (this is just null in that case).
+  res.locals.successMessage = req.query.success || null;
   next();
 });
 

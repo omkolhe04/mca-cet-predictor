@@ -8,6 +8,7 @@ const validateRequest = require('../middlewares/validateRequest');
 const { predictionFormValidators } = require('../validators/prediction.validator');
 const predictionController = require('../controllers/prediction.controller');
 const lookupService = require('../services/lookup.service');
+const collegeRepository = require('../repositories/college.repository');
 
 // Rebuilds the dropdown data needed to re-render the form if
 // validation fails — the form view always needs this, whether
@@ -26,7 +27,15 @@ async function buildFormLocals(req) {
   // itself will still show its own validation error either way.
   const selectedExamCode = validCodes.has(submittedCode) ? submittedCode : lookupService.DEFAULT_EXAM_TYPE_CODE;
   const formOptions = await lookupService.getFormOptions(selectedExamCode);
-  return { ...formOptions, examTypes, selectedExamCode, title: 'Start Your Prediction' };
+
+  const examTypesWithCounts = await Promise.all(
+    examTypes.map(async (examType) => ({
+      ...examType,
+      collegeCount: await collegeRepository.countAll(examType.id),
+    }))
+  );
+
+  return { ...formOptions, examTypes: examTypesWithCounts, selectedExamCode, title: 'Start Your Prediction' };
 }
 
 router.get('/', asyncHandler(predictionController.showForm));

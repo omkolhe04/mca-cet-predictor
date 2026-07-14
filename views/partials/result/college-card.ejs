@@ -3,14 +3,19 @@
   const meta = CHANCE_BUCKET_META[chanceKey];
 %>
 <div class="col-12 col-md-6">
-  <div class="vn-card h-100">
-    <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
-      <h3 class="h6 mb-0"><%= entry.collegeName %></h3>
+  <div class="vn-college-card-premium">
+    <div class="d-flex justify-content-between align-items-start mb-3 gap-2">
+      <div class="d-flex align-items-start gap-3">
+        <span class="vn-college-avatar"><%- icon('building-2', { class: 'vn-icon-sm' }) %></span>
+        <div>
+          <h3 class="h6 mb-0"><%= entry.collegeName %></h3>
+          <% if (entry.city) { %>
+            <p class="small mb-0" style="color: var(--vn-ink-muted);"><%= entry.city %></p>
+          <% } %>
+        </div>
+      </div>
       <span class="vn-badge <%= meta.badgeClass %> flex-shrink-0"><%= meta.label %></span>
     </div>
-    <% if (entry.city) { %>
-      <p class="small mb-3" style="color: var(--vn-ink-muted);"><%= entry.city %></p>
-    <% } %>
 
     <dl class="row small mb-2">
       <dt class="col-6" style="color: var(--vn-ink-muted);">Previous Cutoff</dt>
@@ -48,7 +53,7 @@
     <% } %>
 
     <a
-      href="/colleges/<%= entry.collegeId %>"
+      href="<%= url('/colleges/' + entry.collegeId) %>"
       class="btn btn-vn-outline btn-sm w-100"
     >
       View Details

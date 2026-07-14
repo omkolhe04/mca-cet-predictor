@@ -6,9 +6,8 @@
   <title><%= typeof title !== 'undefined' ? title + ' | Admin | ' + appName : 'Admin | ' + appName %></title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
   />
   <link rel="stylesheet" href="<%= url('/css/style.css') %>" />
@@ -20,21 +19,22 @@
       <aside class="vn-admin-sidebar">
         <div class="vn-admin-brand">VidyaNITI Admin</div>
         <ul class="vn-admin-nav">
-          <li><a href="<%= url('/admin/dashboard') %>" class="<%= currentPath.startsWith('/admin/dashboard') ? 'active' : '' %>"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-          <li><a href="<%= url('/admin/exam-types') %>" class="<%= currentPath.startsWith('/admin/exam-types') ? 'active' : '' %>"><i class="bi bi-mortarboard me-2"></i>Exam Types</a></li>
-          <li><a href="<%= url('/admin/colleges') %>" class="<%= currentPath.startsWith('/admin/colleges') ? 'active' : '' %>"><i class="bi bi-building me-2"></i>Colleges</a></li>
-          <li><a href="<%= url('/admin/import') %>" class="<%= currentPath.startsWith('/admin/import') ? 'active' : '' %>"><i class="bi bi-upload me-2"></i>Import Data</a></li>
-          <li><a href="<%= url('/admin/users') %>" class="<%= currentPath.startsWith('/admin/users') ? 'active' : '' %>"><i class="bi bi-people me-2"></i>Users</a></li>
-          <li><a href="<%= url('/admin/notifications') %>" class="<%= currentPath.startsWith('/admin/notifications') ? 'active' : '' %>"><i class="bi bi-megaphone me-2"></i>Notifications</a></li>
-          <li><a href="<%= url('/admin/sliders') %>" class="<%= currentPath.startsWith('/admin/sliders') ? 'active' : '' %>"><i class="bi bi-images me-2"></i>Slider</a></li>
+          <li><a href="<%= url('/admin/dashboard') %>" class="<%= currentPath.startsWith('/admin/dashboard') ? 'active' : '' %>"><%- icon('layout-dashboard', { class: 'vn-icon-xs me-2' }) %>Dashboard</a></li>
+          <li><a href="<%= url('/admin/exam-types') %>" class="<%= currentPath.startsWith('/admin/exam-types') ? 'active' : '' %>"><%- icon('graduation-cap', { class: 'vn-icon-xs me-2' }) %>Exam Types</a></li>
+          <li><a href="<%= url('/admin/colleges') %>" class="<%= currentPath.startsWith('/admin/colleges') ? 'active' : '' %>"><%- icon('building-2', { class: 'vn-icon-xs me-2' }) %>Colleges</a></li>
+          <li><a href="<%= url('/admin/import') %>" class="<%= currentPath.startsWith('/admin/import') ? 'active' : '' %>"><%- icon('upload', { class: 'vn-icon-xs me-2' }) %>Import Data</a></li>
+          <li><a href="<%= url('/admin/users') %>" class="<%= currentPath.startsWith('/admin/users') ? 'active' : '' %>"><%- icon('users', { class: 'vn-icon-xs me-2' }) %>Users</a></li>
+          <li><a href="<%= url('/admin/notifications') %>" class="<%= currentPath.startsWith('/admin/notifications') ? 'active' : '' %>"><%- icon('megaphone', { class: 'vn-icon-xs me-2' }) %>Notifications</a></li>
+          <li><a href="<%= url('/admin/sliders') %>" class="<%= currentPath.startsWith('/admin/sliders') ? 'active' : '' %>"><%- icon('image', { class: 'vn-icon-xs me-2' }) %>Slider</a></li>
         </ul>
         <form action="<%= url('/admin/logout') %>" method="POST" class="mt-3">
-          <button type="submit" class="btn btn-sm btn-vn-outline w-100" style="border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.85);">
-            <i class="bi bi-box-arrow-right me-1"></i> Log out
+          <button type="submit" class="btn btn-sm btn-vn-outline w-100 d-inline-flex align-items-center justify-content-center gap-1" style="border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.85);">
+            <%- icon('log-out', { class: 'vn-icon-xs' }) %> Log out
           </button>
         </form>
       </aside>
       <main class="vn-admin-content">
+        <%- include('../partials/toast-success') %>
         <%- body %>
       </main>
     </div>

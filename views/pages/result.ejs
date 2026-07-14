@@ -1,14 +1,7 @@
 <section class="vn-section pb-3">
   <div class="container text-center">
     <p class="vn-eyebrow mb-2">Your Result</p>
-    <h1 class="h3 mb-2"><%= examName %> Prediction Result</h1>
-    <% if (snapshot && snapshot.totalCollegesEvaluated > 0) { %>
-      <p style="color: var(--vn-ink-muted);">
-        Percentile <%= prediction.percentile %> &middot; Evaluated against
-        <%= snapshot.examYear %> CAP cutoff data across <%= snapshot.totalCollegesEvaluated %> colleges
-        &middot; Eligible categories: <%= snapshot.eligibleCategories.join(', ') %>
-      </p>
-    <% } %>
+    <h1 class="h3 mb-4"><%= examName %> Prediction Result</h1>
   </div>
 </section>
 
@@ -17,25 +10,66 @@
   <!-- ================= Empty state ================= -->
   <section class="vn-section pt-0">
     <div class="container vn-container-narrow">
-      <div class="vn-card text-center">
-        <i class="bi bi-hourglass-split" style="font-size: 2rem; color: var(--vn-blue-700);"></i>
-        <h2 class="h5 mt-3 mb-2">Results aren't ready yet</h2>
-        <p class="mb-3" style="color: var(--vn-ink-muted);">
+      <div class="vn-card vn-empty-state">
+        <span class="vn-empty-state-icon">
+          <%- icon('calendar', { class: 'vn-icon-lg' }) %>
+        </span>
+        <h2 class="vn-empty-state-title">Results aren't ready yet</h2>
+        <p class="vn-empty-state-desc mb-3">
           <%= (snapshot && snapshot.note) || 'Official CAP cutoff data has not been loaded yet.' %>
           Your details are saved — check back once cutoff data is available and results will
           appear here automatically.
         </p>
-        <a href="<%= url('/') %>" class="btn btn-vn-outline">Back to Home</a>
+        <a href="<%= url('/') %>" class="btn btn-vn-outline d-inline-flex align-items-center gap-2">
+          <%- icon('house', { class: 'vn-icon-sm' }) %>
+          Back to Home
+        </a>
       </div>
     </div>
   </section>
 
 <% } else { %>
 
+  <!-- ================= Summary dashboard ================= -->
+  <section class="vn-section pt-0 pb-4">
+    <div class="container">
+      <div class="row g-3">
+        <div class="col-6 col-lg-3">
+          <div class="vn-stat-card-premium">
+            <span class="vn-stat-icon-wrap"><%- icon('target', { class: 'vn-icon-md' }) %></span>
+            <div class="vn-stat-number" style="font-size: 1.75rem;"><%= prediction.percentile %></div>
+            <p class="vn-stat-label mb-0">Your Percentile</p>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="vn-stat-card-premium">
+            <span class="vn-stat-icon-wrap"><%- icon('building-2', { class: 'vn-icon-md' }) %></span>
+            <div class="vn-stat-number" style="font-size: 1.75rem;"><%= snapshot.totalCollegesEvaluated %></div>
+            <p class="vn-stat-label mb-0">Colleges Evaluated</p>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="vn-stat-card-premium">
+            <span class="vn-stat-icon-wrap"><%- icon('shield', { class: 'vn-icon-md' }) %></span>
+            <div class="vn-stat-number" style="font-size: 1.75rem;"><%= snapshot.eligibleCategories.length %></div>
+            <p class="vn-stat-label mb-0">Eligible Categories</p>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="vn-stat-card-premium">
+            <span class="vn-stat-icon-wrap"><%- icon('calendar', { class: 'vn-icon-md' }) %></span>
+            <div class="vn-stat-number" style="font-size: 1.75rem;"><%= snapshot.examYear %></div>
+            <p class="vn-stat-label mb-0">CAP Cutoff Year Used</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ================= Round tabs ================= -->
   <section class="vn-section pt-0">
     <div class="container">
-      <ul class="nav nav-tabs" id="roundTabs" role="tablist">
+      <ul class="nav vn-round-tabs" id="roundTabs" role="tablist">
         <% CAP_ROUNDS.forEach(function (roundCode, idx) { %>
           <li class="nav-item" role="presentation">
             <button
@@ -76,7 +110,7 @@
   </section>
 
   <!-- ================= Recommended preference order ================= -->
-  <section class="vn-section" style="background-color: var(--vn-blue-50);">
+  <section class="vn-section" style="background-color: var(--vn-bg-subtle);">
     <div class="container">
       <div class="text-center mb-4">
         <p class="vn-eyebrow mb-2">Use This For Your CAP Option Form</p>
@@ -92,13 +126,52 @@
   <!-- ================= PDF download ================= -->
   <section class="vn-section">
     <div class="container text-center">
-      <a href="<%= url('/predict/' + prediction.id + '/pdf') %>" class="btn btn-vn-primary btn-lg">
-        Download PDF Report
+      <a
+        href="<%= url('/predict/' + prediction.id + '/pdf') %>"
+        id="pdfDownloadBtn"
+        class="btn btn-vn-primary btn-lg vn-magnetic vn-ripple-container d-inline-flex align-items-center gap-2"
+      >
+        <span id="pdfDownloadLabel">Download PDF Report</span>
+        <%- icon('download', { class: 'vn-icon-sm' }) %>
       </a>
       <p class="small mt-2 mb-0" style="color: var(--vn-ink-muted);">
         A printable copy of this result, including your CAP preference order.
       </p>
     </div>
   </section>
+
+  <script>
+    // Optimistic loading-state text on the PDF button. The
+    // actual download is a normal browser file download (no
+    // fetch/XHR involved, so there's no real progress event to
+    // hook into) — this just cycles reassuring status text for
+    // a few seconds after the click, then reverts, independent
+    // of when the browser actually finishes saving the file.
+    (function () {
+      const btn = document.getElementById('pdfDownloadBtn');
+      const label = document.getElementById('pdfDownloadLabel');
+      if (!btn || !label) return;
+
+      const messages = ['Preparing Report…', 'Generating PDF…', 'Almost Ready…'];
+      let cancelled = false;
+
+      btn.addEventListener('click', () => {
+        cancelled = false;
+        let i = 0;
+        label.textContent = messages[0];
+        const interval = setInterval(() => {
+          i += 1;
+          if (cancelled || i >= messages.length) {
+            clearInterval(interval);
+            setTimeout(() => {
+              if (!cancelled) label.textContent = 'Download PDF Report';
+            }, 900);
+            return;
+          }
+          label.textContent = messages[i];
+        }, 900);
+      });
+    })();
+  </script>
 
 <% } %>

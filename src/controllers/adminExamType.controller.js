@@ -13,8 +13,8 @@ async function showCreateForm(req, res) {
 }
 
 async function create(req, res) {
-  await adminExamTypeService.createExamType(req.body);
-  res.redirect(url('/admin/exam-types'));
+  const examType = await adminExamTypeService.createExamType(req.body);
+  res.redirect(url(`/admin/exam-types?success=${encodeURIComponent(`"${examType.name}" was added successfully.`)}`));
 }
 
 async function showEditForm(req, res) {
@@ -30,8 +30,8 @@ async function showEditForm(req, res) {
 }
 
 async function update(req, res) {
-  await adminExamTypeService.updateExamType(req.params.id, req.body);
-  res.redirect(url('/admin/exam-types'));
+  const examType = await adminExamTypeService.updateExamType(req.params.id, req.body);
+  res.redirect(url(`/admin/exam-types?success=${encodeURIComponent(`"${examType.name}" was updated successfully.`)}`));
 }
 
 module.exports = { list, showCreateForm, create, showEditForm, update };
