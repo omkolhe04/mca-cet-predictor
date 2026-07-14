@@ -1,7 +1,7 @@
 <section class="vn-section pb-3">
   <div class="container text-center">
     <p class="vn-eyebrow mb-2">Your Result</p>
-    <h1 class="h3 mb-2">MCA CET Prediction Result</h1>
+    <h1 class="h3 mb-2"><%= examName %> Prediction Result</h1>
     <% if (snapshot && snapshot.totalCollegesEvaluated > 0) { %>
       <p style="color: var(--vn-ink-muted);">
         Percentile <%= prediction.percentile %> &middot; Evaluated against
@@ -25,7 +25,7 @@
           Your details are saved — check back once cutoff data is available and results will
           appear here automatically.
         </p>
-        <a href="/" class="btn btn-vn-outline">Back to Home</a>
+        <a href="<%= url('/') %>" class="btn btn-vn-outline">Back to Home</a>
       </div>
     </div>
   </section>
@@ -92,7 +92,7 @@
   <!-- ================= PDF download ================= -->
   <section class="vn-section">
     <div class="container text-center">
-      <a href="/predict/<%= prediction.id %>/pdf" class="btn btn-vn-primary btn-lg">
+      <a href="<%= url('/predict/' + prediction.id + '/pdf') %>" class="btn btn-vn-primary btn-lg">
         Download PDF Report
       </a>
       <p class="small mt-2 mb-0" style="color: var(--vn-ink-muted);">

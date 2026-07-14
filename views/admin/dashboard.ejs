@@ -2,6 +2,19 @@
   <h1 class="h4 mb-0">Dashboard</h1>
 </div>
 
+<ul class="nav nav-tabs mb-4">
+  <% stats.allExamTypes.forEach(function (et) { %>
+    <li class="nav-item">
+      <a
+        class="nav-link <%= et.id === stats.examType.id ? 'active' : '' %>"
+        href="<%= url('/admin/dashboard?exam=' + et.code) %>"
+      >
+        <%= et.name %>
+      </a>
+    </li>
+  <% }) %>
+</ul>
+
 <div class="row g-3 mb-4">
   <div class="col-12 col-sm-4">
     <div class="vn-stat-card">
@@ -11,7 +24,7 @@
   </div>
   <div class="col-12 col-sm-4">
     <div class="vn-stat-card">
-      <p class="small mb-1" style="color: var(--vn-ink-muted);">Total Users</p>
+      <p class="small mb-1" style="color: var(--vn-ink-muted);">Total Users <span class="text-muted">(all exams)</span></p>
       <div class="vn-stat-value"><%= stats.totalUsers %></div>
     </div>
   </div>

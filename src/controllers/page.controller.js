@@ -14,7 +14,7 @@ async function renderLanding(req, res) {
   ]);
 
   res.render('pages/landing', {
-    title: 'MCA CET College Predictor',
+    title: 'MCA CET & MBA CET College Predictor',
     notifications,
     sliders,
   });

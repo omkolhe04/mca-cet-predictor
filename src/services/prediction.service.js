@@ -16,7 +16,7 @@ const collegeRepository = require('../repositories/college.repository');
  *   4. Persist the engine's result onto the same prediction row
  */
 async function submitPrediction(formData) {
-  const examType = await lookupService.getActiveExamType();
+  const examType = await lookupService.getExamTypeByCode(formData.examTypeCode);
 
   const user = await userService.createOrUpdateUser({
     name: formData.name,

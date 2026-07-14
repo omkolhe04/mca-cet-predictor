@@ -6,8 +6,9 @@ const QRCode = require('qrcode');
 const predictionResultService = require('./predictionResult.service');
 const predictionService = require('./prediction.service');
 const userService = require('./user.service');
+const examTypeRepository = require('../repositories/examType.repository');
 const env = require('../config/env');
-const { CAP_ROUNDS } = require('../utils/constants');
+const { generateRoundCodes } = require('../utils/constants');
 const { colors, fonts, page, chanceColors } = require('./pdf/pdfTheme');
 const {
   contentWidth,
@@ -33,8 +34,8 @@ function formatDifference(value) {
   return value > 0 ? `+${value}` : `${value}`;
 }
 
-function drawCoverPage(doc, { user, prediction, predictionDetails, qrBuffer }) {
-  drawEyebrow(doc, 'VidyaNITI \u00b7 MCA CET CAP Admissions');
+function drawCoverPage(doc, { user, prediction, predictionDetails, qrBuffer, examName }) {
+  drawEyebrow(doc, `VidyaNITI \u00b7 ${examName} CAP Admissions`);
   drawTitle(doc, 'Your Prediction Report');
   doc.fillColor(colors.inkMuted).font(fonts.regular).fontSize(10);
   doc.text(`Generated on ${new Date().toLocaleString('en-IN')}`, doc.page.margins.left, doc.y);
@@ -62,7 +63,7 @@ function drawCoverPage(doc, { user, prediction, predictionDetails, qrBuffer }) {
     ['Name', user.name],
     ['Mobile', user.mobile],
     ['Email', user.email],
-    ['MCA CET Percentile', String(prediction.percentile)],
+    [`${examName} Percentile`, String(prediction.percentile)],
     ['Category', predictionDetails.categoryName || '\u2014'],
     ['Gender', prediction.gender],
     ['Home University', predictionDetails.homeUniversityName || '\u2014'],
@@ -232,9 +233,10 @@ async function generateReportBuffer(predictionId) {
     return null;
   }
 
-  const [predictionDetails, user, qrBuffer] = await Promise.all([
+  const [predictionDetails, user, examType, qrBuffer] = await Promise.all([
     predictionService.getPredictionWithDetails(predictionId),
     userService.findUserById(resultView.prediction.user_id),
+    examTypeRepository.findById(resultView.prediction.exam_type_id),
     QRCode.toBuffer(env.appBaseUrl, {
       width: 200,
       margin: 1,
@@ -261,14 +263,27 @@ async function generateReportBuffer(predictionId) {
     decoratePage();
   });
 
-  drawCoverPage(doc, { user, prediction: resultView.prediction, predictionDetails, qrBuffer });
+  drawCoverPage(doc, {
+    user,
+    prediction: resultView.prediction,
+    predictionDetails,
+    qrBuffer,
+    examName: examType ? examType.name : 'MCA CET',
+  });
 
   const snapshot = resultView.snapshot;
   if (snapshot && snapshot.totalCollegesEvaluated > 0) {
     doc.addPage();
     drawPreferenceOrderSection(doc, snapshot.recommendedPreferenceOrder);
 
-    CAP_ROUNDS.forEach((roundCode, roundIndex) => {
+    // Round codes come from the snapshot itself (set by the
+    // engine at computation time) rather than a hardcoded
+    // constant — could be 4 rounds (MCA CET), 3 (MBA CET), etc.
+    // Predictions computed before this field existed fall back
+    // to 4, matching what the engine always produced at the time.
+    const roundCodes = snapshot.roundCodes || generateRoundCodes(4);
+
+    roundCodes.forEach((roundCode, roundIndex) => {
       doc.addPage();
       drawRoundSection(doc, roundCode, roundIndex, snapshot);
     });

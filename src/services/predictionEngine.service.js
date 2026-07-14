@@ -4,7 +4,8 @@ const categoryRepository = require('../repositories/category.repository');
 const collegeRepository = require('../repositories/college.repository');
 const collegeBranchRepository = require('../repositories/collegeBranch.repository');
 const cutoffRepository = require('../repositories/cutoff.repository');
-const { CAP_ROUNDS, CHANCE_THRESHOLDS, SPECIAL_CATEGORY_CODE_BY_FLAG } = require('../utils/constants');
+const examTypeRepository = require('../repositories/examType.repository');
+const { generateRoundCodes, CHANCE_THRESHOLDS, SPECIAL_CATEGORY_CODE_BY_FLAG } = require('../utils/constants');
 
 /**
  * ===========================================================
@@ -79,22 +80,24 @@ function round7(value) {
   return Math.round(value * 1e7) / 1e7;
 }
 
-function emptyRoundsMap() {
+function emptyRoundsMap(roundCodes) {
   const rounds = {};
-  for (const roundCode of CAP_ROUNDS) {
+  for (const roundCode of roundCodes) {
     rounds[roundCode] = { veryHigh: [], high: [], moderate: [], low: [], noData: [] };
   }
   return rounds;
 }
 
-function buildEmptySnapshot({ eligibleCategoryCodes, note }) {
+function buildEmptySnapshot({ eligibleCategoryCodes, note, roundCodes, examTypeCode }) {
   return {
     engineVersion: 1,
     computedAt: new Date().toISOString(),
     examYear: null,
+    examTypeCode,
+    roundCodes,
     eligibleCategories: eligibleCategoryCodes,
     totalCollegesEvaluated: 0,
-    rounds: emptyRoundsMap(),
+    rounds: emptyRoundsMap(roundCodes),
     dreamCollege: null,
     recommendedPreferenceOrder: [],
     note,
@@ -207,6 +210,9 @@ function computeBestMatchPerBranchRound(
 async function runEngine(prediction) {
   const studentPercentile = Number(prediction.percentile);
 
+  const examType = await examTypeRepository.findById(prediction.exam_type_id);
+  const roundCodes = generateRoundCodes(examType ? examType.cap_rounds : 4);
+
   const eligibleCategories = await resolveEligibleCategories(prediction);
   const eligibleCategoryIds = eligibleCategories.map((c) => c.id);
   const eligibleCategoryById = new Map(eligibleCategories.map((c) => [c.id, c]));
@@ -216,6 +222,8 @@ async function runEngine(prediction) {
   if (colleges.length === 0) {
     return buildEmptySnapshot({
       eligibleCategoryCodes,
+      roundCodes,
+      examTypeCode: examType ? examType.code : null,
       note: 'No colleges have been loaded for this exam yet.',
     });
   }
@@ -225,6 +233,8 @@ async function runEngine(prediction) {
   if (branches.length === 0) {
     return buildEmptySnapshot({
       eligibleCategoryCodes,
+      roundCodes,
+      examTypeCode: examType ? examType.code : null,
       note: 'No branch data has been loaded for these colleges yet.',
     });
   }
@@ -234,6 +244,8 @@ async function runEngine(prediction) {
   if (!examYear) {
     return buildEmptySnapshot({
       eligibleCategoryCodes,
+      roundCodes,
+      examTypeCode: examType ? examType.code : null,
       note: 'No CAP cutoff data has been imported yet.',
     });
   }
@@ -261,13 +273,13 @@ async function runEngine(prediction) {
     prediction.gender
   );
 
-  const rounds = emptyRoundsMap();
+  const rounds = emptyRoundsMap(roundCodes);
 
   for (const branch of branches) {
     const college = collegeById.get(branch.college_id);
     if (!college) continue;
 
-    for (const roundCode of CAP_ROUNDS) {
+    for (const roundCode of roundCodes) {
       const best = bestByKey.get(`${branch.id}|${roundCode}`);
       const baseEntry = {
         collegeId: college.id,
@@ -294,7 +306,7 @@ async function runEngine(prediction) {
   }
 
   // Within each bucket, most comfortable margin first.
-  for (const roundCode of CAP_ROUNDS) {
+  for (const roundCode of roundCodes) {
     for (const bucketKey of CHANCE_BUCKET_KEYS) {
       rounds[roundCode][bucketKey].sort((a, b) => b.difference - a.difference);
     }
@@ -308,7 +320,7 @@ async function runEngine(prediction) {
     const collegeBranches = branches.filter((b) => b.college_id === college.id);
 
     const dreamRounds = {};
-    for (const roundCode of CAP_ROUNDS) {
+    for (const roundCode of roundCodes) {
       let best = null;
       for (const branch of collegeBranches) {
         const candidate = bestByKey.get(`${branch.id}|${roundCode}`);
@@ -379,6 +391,8 @@ async function runEngine(prediction) {
     engineVersion: 1,
     computedAt: new Date().toISOString(),
     examYear,
+    examTypeCode: examType ? examType.code : null,
+    roundCodes,
     eligibleCategories: eligibleCategoryCodes,
     totalCollegesEvaluated: colleges.length,
     rounds,

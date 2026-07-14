@@ -1,15 +1,28 @@
 'use strict';
 
 /**
- * The four Maharashtra CAP rounds, in order. Values match the
- * `round` column values assumed in the cutoffs table (see the
- * comment in database/migrations/009_cutoffs.sql and the "Not
- * yet decided" note in database/README.md) — CONFIRM these
- * against a real official CAP cutoff JSON file before Phase 8's
- * import engine goes live; if the real values differ, this is
- * the one place to update them.
+ * Generates round codes for however many CAP rounds a given exam
+ * has — e.g. generateRoundCodes(4) -> ['CAP1','CAP2','CAP3','CAP4'],
+ * generateRoundCodes(3) -> ['CAP1','CAP2','CAP3'].
+ *
+ * Replaces what used to be a single hardcoded CAP_ROUNDS = [...]
+ * array here, back when only MCA CET (4 rounds) existed. Round
+ * count is now per-exam configuration (exam_types.cap_rounds —
+ * see migration 022), since MBA CET has 3 rounds, not 4, and
+ * future exams may differ again. Every caller that used to import
+ * CAP_ROUNDS directly now calls this with the specific exam's
+ * configured round count instead.
+ *
+ * Values match the `round` column values assumed in the cutoffs
+ * table (see the comment in database/migrations/009_cutoffs.sql).
  */
-const CAP_ROUNDS = ['CAP1', 'CAP2', 'CAP3', 'CAP4'];
+function generateRoundCodes(capRoundsCount) {
+  const rounds = [];
+  for (let i = 1; i <= capRoundsCount; i += 1) {
+    rounds.push(`CAP${i}`);
+  }
+  return rounds;
+}
 
 /**
  * Chance classification bands, based on the percentile-point
@@ -19,6 +32,11 @@ const CAP_ROUNDS = ['CAP1', 'CAP2', 'CAP3', 'CAP4'];
  *   HIGH <= difference < VERY_HIGH -> High chance
  *   MODERATE <= difference < HIGH  -> Moderate chance
  *   difference < MODERATE          -> Low chance
+ *
+ * Shared across every exam type — confirmed with the product
+ * owner that MBA CET's chance logic is procedurally identical to
+ * MCA CET's, just with different colleges/data/round count, so
+ * these bands are not exam-specific.
  */
 const CHANCE_THRESHOLDS = {
   VERY_HIGH: 5,
@@ -31,7 +49,9 @@ const CHANCE_THRESHOLDS = {
  * the category `code` it corresponds to in the categories table
  * (see database/seeds/002_categories.sql). Used by the engine to
  * work out every category a student is eligible to be evaluated
- * against, beyond their base category.
+ * against, beyond their base category. Categories are shared
+ * across exam types (state reservation categories don't change
+ * based on which entrance exam you're taking).
  */
 const SPECIAL_CATEGORY_CODE_BY_FLAG = {
   is_tfws: 'TFWS',
@@ -54,4 +74,4 @@ const CHANCE_BUCKET_META = {
   low: { label: 'Low', badgeClass: 'vn-badge-danger' },
 };
 
-module.exports = { CAP_ROUNDS, CHANCE_THRESHOLDS, SPECIAL_CATEGORY_CODE_BY_FLAG, CHANCE_BUCKET_META };
+module.exports = { generateRoundCodes, CHANCE_THRESHOLDS, SPECIAL_CATEGORY_CODE_BY_FLAG, CHANCE_BUCKET_META };

@@ -1,10 +1,24 @@
 <div class="vn-admin-topbar">
   <h1 class="h4 mb-0">Manage Colleges</h1>
-  <a href="/admin/colleges/new" class="btn btn-vn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Add College</a>
+  <a href="<%= url('/admin/colleges/new') %>" class="btn btn-vn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Add College</a>
 </div>
 
+<ul class="nav nav-tabs mb-3">
+  <% allExamTypes.forEach(function (et) { %>
+    <li class="nav-item">
+      <a
+        class="nav-link <%= et.id === examType.id ? 'active' : '' %>"
+        href="<%= url('/admin/colleges?exam=' + et.code) %>"
+      >
+        <%= et.name %>
+      </a>
+    </li>
+  <% }) %>
+</ul>
+
 <div class="vn-card mb-3">
-  <form action="/admin/colleges" method="GET" class="d-flex gap-2">
+  <form action="<%= url('/admin/colleges') %>" method="GET" class="d-flex gap-2">
+    <input type="hidden" name="exam" value="<%= examType.code %>" />
     <input
       type="text"
       name="search"
@@ -19,7 +33,7 @@
 <div class="vn-card">
   <% if (!colleges.length) { %>
     <p class="small mb-0 text-center" style="color: var(--vn-ink-muted);">
-      <%= search ? 'No colleges match your search.' : 'No colleges yet. Colleges are created automatically when you import cutoff data, or you can add one manually.' %>
+      <%= search ? 'No colleges match your search.' : 'No ' + examType.name + ' colleges yet. Colleges are created automatically when you import cutoff data, or you can add one manually.' %>
     </p>
   <% } else { %>
     <div class="table-responsive">
@@ -47,7 +61,7 @@
                 <% } %>
               </td>
               <td class="text-end">
-                <a href="/admin/colleges/<%= college.id %>/edit" class="btn btn-sm btn-vn-outline">Edit</a>
+                <a href="<%= url('/admin/colleges/' + college.id + '/edit') %>" class="btn btn-sm btn-vn-outline">Edit</a>
               </td>
             </tr>
           <% }) %>
@@ -60,7 +74,7 @@
         <ul class="pagination pagination-sm justify-content-center mb-0">
           <% for (let p = 1; p <= totalPages; p++) { %>
             <li class="page-item <%= p === page ? 'active' : '' %>">
-              <a class="page-link" href="/admin/colleges?page=<%= p %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"><%= p %></a>
+              <a class="page-link" href="<%= url('/admin/colleges?exam=' + examType.code + '&page=' + p + (search ? '&search=' + encodeURIComponent(search) : '')) %>"><%= p %></a>
             </li>
           <% } %>
         </ul>

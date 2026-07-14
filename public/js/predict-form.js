@@ -11,6 +11,81 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  // ---------------------------------------------------------
+  // Exam selection — switching between MCA CET / MBA CET (etc)
+  // updates the hidden examTypeCode field, the percentile field's
+  // label, and re-fetches the Dream College list for that exam
+  // (colleges are exam-specific; categories and universities are
+  // not, so those dropdowns don't need to change).
+  // ---------------------------------------------------------
+  const examButtons = document.querySelectorAll('.exam-type-btn');
+  const examTypeCodeInput = document.getElementById('examTypeCode');
+  const percentileLabelText = document.getElementById('percentileLabelText');
+  const dreamCollegeSelect = document.getElementById('dreamCollegeId');
+  const dreamCollegeHint = document.getElementById('dreamCollegeHint');
+  const collegesApiUrl = form.dataset.collegesApi;
+
+  async function refreshCollegesForExam(examCode) {
+    if (!dreamCollegeSelect || !collegesApiUrl) {
+      return;
+    }
+    dreamCollegeHint.textContent = 'Loading colleges…';
+
+    try {
+      const response = await fetch(`${collegesApiUrl}?exam=${encodeURIComponent(examCode)}`);
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+      const data = await response.json();
+
+      // Rebuild the options, keeping the "no dream college" default.
+      dreamCollegeSelect.innerHTML = '';
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = 'No dream college / not sure yet';
+      defaultOption.selected = true;
+      dreamCollegeSelect.appendChild(defaultOption);
+
+      data.colleges.forEach((college) => {
+        const option = document.createElement('option');
+        option.value = college.id;
+        option.textContent = college.name;
+        dreamCollegeSelect.appendChild(option);
+      });
+
+      dreamCollegeHint.textContent =
+        data.colleges.length === 0 ? 'College list will be available once official cutoff data is loaded.' : '';
+    } catch (err) {
+      dreamCollegeHint.textContent = 'Could not load colleges right now — you can still submit without a dream college.';
+    }
+  }
+
+  examButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const code = button.dataset.examCode;
+      const name = button.dataset.examName;
+
+      // Update button styles: selected button primary, rest outline.
+      examButtons.forEach((btn) => {
+        btn.classList.remove('btn-vn-primary');
+        btn.classList.add('btn-vn-outline');
+      });
+      button.classList.remove('btn-vn-outline');
+      button.classList.add('btn-vn-primary');
+
+      if (examTypeCodeInput) {
+        examTypeCodeInput.value = code;
+      }
+      if (percentileLabelText) {
+        percentileLabelText.textContent = name;
+      }
+
+      // Switching exams invalidates any previously selected dream
+      // college (it belonged to the other exam's college list).
+      refreshCollegesForExam(code);
+    });
+  });
+
   // Mobile: digits only, max 10.
   const mobileInput = document.getElementById('mobile');
   if (mobileInput) {

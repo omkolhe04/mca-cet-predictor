@@ -5,10 +5,10 @@ const cutoffRepository = require('../repositories/cutoff.repository');
 const lookupService = require('./lookup.service');
 const AppError = require('../utils/AppError');
 
-async function listImportHistory() {
-  const examType = await lookupService.getActiveExamType();
+async function listImportHistory(examTypeCode) {
+  const { examType, allExamTypes } = await lookupService.resolveExamTypeSelection(examTypeCode);
   const batches = await importBatchRepository.findAllByExamType(examType.id);
-  return batches.map((b) => ({
+  const history = batches.map((b) => ({
     id: b.id,
     filename: b.filename,
     importedByName: b.admins?.name || null,
@@ -18,6 +18,7 @@ async function listImportHistory() {
     invalidRowCount: b.invalid_row_count,
     cutoffsUpserted: b.cutoffs_upserted,
   }));
+  return { history, examType, allExamTypes };
 }
 
 /**

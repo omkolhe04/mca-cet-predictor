@@ -5,8 +5,10 @@ const predictionService = require('../services/prediction.service');
 const predictionResultService = require('../services/predictionResult.service');
 const pdfReportService = require('../services/pdfReport.service');
 const userService = require('../services/user.service');
+const examTypeRepository = require('../repositories/examType.repository');
 const { setUserSessionCookie, getUserIdFromRequest } = require('../utils/userSession');
-const { CAP_ROUNDS, CHANCE_BUCKET_META } = require('../utils/constants');
+const { generateRoundCodes, CHANCE_BUCKET_META } = require('../utils/constants');
+const { url } = require('../utils/url');
 
 /**
  * GET /predict — renders the form. If the visitor has a
@@ -15,7 +17,9 @@ const { CAP_ROUNDS, CHANCE_BUCKET_META } = require('../utils/constants');
  * session" pre-fill happens.
  */
 async function showForm(req, res) {
-  const formOptions = await lookupService.getFormOptions();
+  const examTypes = await lookupService.getAllActiveExamTypes();
+  const defaultExamCode = lookupService.DEFAULT_EXAM_TYPE_CODE;
+  const formOptions = await lookupService.getFormOptions(defaultExamCode);
   const existingUser = await userService.findUserById(getUserIdFromRequest(req));
 
   const formValues = existingUser
@@ -31,6 +35,8 @@ async function showForm(req, res) {
 
   res.render('pages/predict', {
     title: 'Start Your Prediction',
+    examTypes,
+    selectedExamCode: defaultExamCode,
     ...formOptions,
     formValues,
     errors: {},
@@ -45,6 +51,7 @@ async function showForm(req, res) {
  */
 async function submitForm(req, res) {
   const formData = {
+    examTypeCode: req.body.examTypeCode,
     name: req.body.name.trim(),
     mobile: req.body.mobile.trim(),
     email: req.body.email.trim().toLowerCase(),
@@ -65,7 +72,7 @@ async function submitForm(req, res) {
 
   setUserSessionCookie(res, user.id);
 
-  res.redirect(`/predict/${prediction.id}/result`);
+  res.redirect(url(`/predict/${prediction.id}/result`));
 }
 
 /**
@@ -85,13 +92,24 @@ async function showResult(req, res) {
     });
   }
 
+  // Round codes come from the snapshot itself (set by the engine
+  // at computation time — could be 4 rounds for MCA CET, 3 for
+  // MBA CET, etc.), not a hardcoded constant. Predictions computed
+  // before this existed fall back to 4, matching what the engine
+  // always produced at the time.
+  const roundCodes = resultView.snapshot?.roundCodes || generateRoundCodes(4);
+
+  const examType = await examTypeRepository.findById(resultView.prediction.exam_type_id);
+  const examName = examType ? examType.name : 'MCA CET';
+
   res.render('pages/result', {
     title: 'Your Prediction Result',
     prediction: resultView.prediction,
     snapshot: resultView.snapshot,
     collegeDetails: resultView.collegeDetails,
-    CAP_ROUNDS,
+    CAP_ROUNDS: roundCodes,
     CHANCE_BUCKET_META,
+    examName,
   });
 }
 

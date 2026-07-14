@@ -4,7 +4,7 @@ const predictionRepository = require('../repositories/prediction.repository');
 const collegeRepository = require('../repositories/college.repository');
 const placementRepository = require('../repositories/placement.repository');
 const feeRepository = require('../repositories/fee.repository');
-const { CAP_ROUNDS } = require('../utils/constants');
+const { generateRoundCodes } = require('../utils/constants');
 
 const CHANCE_BUCKET_KEYS = ['veryHigh', 'high', 'moderate', 'low'];
 
@@ -13,11 +13,19 @@ const CHANCE_BUCKET_KEYS = ['veryHigh', 'high', 'moderate', 'low'];
  * all rounds, all buckets, the dream college, and the
  * recommended preference order — so enrichment data can be
  * fetched in one bulk pass instead of per-card.
+ *
+ * Uses snapshot.roundCodes (set by the Prediction Engine at
+ * computation time) rather than a hardcoded round list — this
+ * snapshot might be for a 4-round exam (MCA CET), a 3-round exam
+ * (MBA CET), or any other configured count. Predictions computed
+ * before this field existed fall back to 4 rounds, matching what
+ * the engine always produced at the time.
  */
 function collectCollegeIds(snapshot) {
   const ids = new Set();
+  const roundCodes = snapshot.roundCodes || generateRoundCodes(4);
 
-  for (const roundCode of CAP_ROUNDS) {
+  for (const roundCode of roundCodes) {
     const round = snapshot.rounds[roundCode];
     if (!round) continue;
     for (const bucketKey of CHANCE_BUCKET_KEYS) {

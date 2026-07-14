@@ -11,8 +11,8 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="/css/style.css" />
-  <link rel="stylesheet" href="/css/admin.css" />
+  <link rel="stylesheet" href="<%= url('/css/style.css') %>" />
+  <link rel="stylesheet" href="<%= url('/css/admin.css') %>" />
 </head>
 <body>
   <% if (typeof currentAdmin !== 'undefined' && currentAdmin) { %>
@@ -20,14 +20,15 @@
       <aside class="vn-admin-sidebar">
         <div class="vn-admin-brand">VidyaNITI Admin</div>
         <ul class="vn-admin-nav">
-          <li><a href="/admin/dashboard" class="<%= currentPath.startsWith('/admin/dashboard') ? 'active' : '' %>"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-          <li><a href="/admin/colleges" class="<%= currentPath.startsWith('/admin/colleges') ? 'active' : '' %>"><i class="bi bi-building me-2"></i>Colleges</a></li>
-          <li><a href="/admin/import" class="<%= currentPath.startsWith('/admin/import') ? 'active' : '' %>"><i class="bi bi-upload me-2"></i>Import Data</a></li>
-          <li><a href="/admin/users" class="<%= currentPath.startsWith('/admin/users') ? 'active' : '' %>"><i class="bi bi-people me-2"></i>Users</a></li>
-          <li><a href="/admin/notifications" class="<%= currentPath.startsWith('/admin/notifications') ? 'active' : '' %>"><i class="bi bi-megaphone me-2"></i>Notifications</a></li>
-          <li><a href="/admin/sliders" class="<%= currentPath.startsWith('/admin/sliders') ? 'active' : '' %>"><i class="bi bi-images me-2"></i>Slider</a></li>
+          <li><a href="<%= url('/admin/dashboard') %>" class="<%= currentPath.startsWith('/admin/dashboard') ? 'active' : '' %>"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+          <li><a href="<%= url('/admin/exam-types') %>" class="<%= currentPath.startsWith('/admin/exam-types') ? 'active' : '' %>"><i class="bi bi-mortarboard me-2"></i>Exam Types</a></li>
+          <li><a href="<%= url('/admin/colleges') %>" class="<%= currentPath.startsWith('/admin/colleges') ? 'active' : '' %>"><i class="bi bi-building me-2"></i>Colleges</a></li>
+          <li><a href="<%= url('/admin/import') %>" class="<%= currentPath.startsWith('/admin/import') ? 'active' : '' %>"><i class="bi bi-upload me-2"></i>Import Data</a></li>
+          <li><a href="<%= url('/admin/users') %>" class="<%= currentPath.startsWith('/admin/users') ? 'active' : '' %>"><i class="bi bi-people me-2"></i>Users</a></li>
+          <li><a href="<%= url('/admin/notifications') %>" class="<%= currentPath.startsWith('/admin/notifications') ? 'active' : '' %>"><i class="bi bi-megaphone me-2"></i>Notifications</a></li>
+          <li><a href="<%= url('/admin/sliders') %>" class="<%= currentPath.startsWith('/admin/sliders') ? 'active' : '' %>"><i class="bi bi-images me-2"></i>Slider</a></li>
         </ul>
-        <form action="/admin/logout" method="POST" class="mt-3">
+        <form action="<%= url('/admin/logout') %>" method="POST" class="mt-3">
           <button type="submit" class="btn btn-sm btn-vn-outline w-100" style="border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.85);">
             <i class="bi bi-box-arrow-right me-1"></i> Log out
           </button>

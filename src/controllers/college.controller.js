@@ -1,7 +1,6 @@
 'use strict';
 
 const collegeDetailService = require('../services/collegeDetail.service');
-const { CAP_ROUNDS } = require('../utils/constants');
 
 async function showDetail(req, res) {
   const detail = await collegeDetailService.getCollegeDetail(req.params.id);
@@ -17,7 +16,7 @@ async function showDetail(req, res) {
   res.render('pages/college-detail', {
     title: detail.college.name,
     ...detail,
-    CAP_ROUNDS,
+    CAP_ROUNDS: detail.roundCodes,
   });
 }
 

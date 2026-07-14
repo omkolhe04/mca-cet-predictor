@@ -34,8 +34,12 @@ async function updateResultSnapshot(id, resultSnapshot) {
   return unwrap(result, 'Could not save prediction result');
 }
 
-async function countAll() {
-  const result = await supabase.from('predictions').select('id', { count: 'exact', head: true });
+async function countAll(examTypeId) {
+  let query = supabase.from('predictions').select('id', { count: 'exact', head: true });
+  if (examTypeId) {
+    query = query.eq('exam_type_id', examTypeId);
+  }
+  const result = await query;
   if (result.error) {
     throw AppError.internal(`Database error: ${result.error.message}`);
   }
@@ -48,12 +52,16 @@ async function countAll() {
  * a read-only dashboard view, not a hot path, so the join cost
  * is a reasonable tradeoff against an extra round trip.
  */
-async function findRecent(limit = 10) {
-  const result = await supabase
+async function findRecent(limit = 10, examTypeId) {
+  let query = supabase
     .from('predictions')
     .select('id, percentile, created_at, users(name, mobile)')
     .order('created_at', { ascending: false })
     .limit(limit);
+  if (examTypeId) {
+    query = query.eq('exam_type_id', examTypeId);
+  }
+  const result = await query;
   if (result.error) {
     throw AppError.internal(`Database error: ${result.error.message}`);
   }
@@ -79,8 +87,12 @@ async function findByUserId(userId) {
  * simplest reliable approach without a Postgres RPC/view, and
  * prediction volume is modest enough that this stays cheap.
  */
-async function findCategoryBreakdown() {
-  const result = await supabase.from('predictions').select('categories(name)');
+async function findCategoryBreakdown(examTypeId) {
+  let query = supabase.from('predictions').select('categories(name)');
+  if (examTypeId) {
+    query = query.eq('exam_type_id', examTypeId);
+  }
+  const result = await query;
   if (result.error) {
     throw AppError.internal(`Database error: ${result.error.message}`);
   }
@@ -99,12 +111,16 @@ async function findCategoryBreakdown() {
  * dashboard's activity chart. Zero-fills days with no
  * submissions so the chart doesn't have gaps.
  */
-async function findDailyCounts(days = 14) {
+async function findDailyCounts(days = 14, examTypeId) {
   const since = new Date();
   since.setDate(since.getDate() - (days - 1));
   since.setHours(0, 0, 0, 0);
 
-  const result = await supabase.from('predictions').select('created_at').gte('created_at', since.toISOString());
+  let query = supabase.from('predictions').select('created_at').gte('created_at', since.toISOString());
+  if (examTypeId) {
+    query = query.eq('exam_type_id', examTypeId);
+  }
+  const result = await query;
   if (result.error) {
     throw AppError.internal(`Database error: ${result.error.message}`);
   }

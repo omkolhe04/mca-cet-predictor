@@ -4,6 +4,7 @@ const { body } = require('express-validator');
 const categoryRepository = require('../repositories/category.repository');
 const universityRepository = require('../repositories/university.repository');
 const collegeRepository = require('../repositories/college.repository');
+const examTypeRepository = require('../repositories/examType.repository');
 
 /**
  * Server-side validation for the prediction form. Mirrors the
@@ -11,12 +12,28 @@ const collegeRepository = require('../repositories/college.repository');
  * the layer that actually matters — client-side is UX only.
  *
  * NOTE — Dream College is deliberately left OPTIONAL for now.
- * The spec calls for it to be required, but colleges is empty
- * until Phase 8's import engine runs, which would make the form
- * unsubmittable end-to-end before then. TODO: switch to
- * .notEmpty() once real college data exists.
+ * The spec calls for it to be required, but MCA CET colleges
+ * only exist because real data has been imported for that exam
+ * specifically — MBA CET (and any future exam) starts with an
+ * empty college list until its own data is imported, which would
+ * make the form unsubmittable for that exam if this were
+ * required. TODO: switch to .notEmpty() once every active exam
+ * has real college data.
  */
 const predictionFormValidators = [
+  body('examTypeCode')
+    .trim()
+    .notEmpty()
+    .withMessage('Please select which exam this prediction is for')
+    .bail()
+    .custom(async (value) => {
+      const examType = await examTypeRepository.findByCode(value);
+      if (!examType || !examType.is_active) {
+        throw new Error('Selected exam is not available');
+      }
+      return true;
+    }),
+
   body('name')
     .trim()
     .notEmpty()
@@ -44,7 +61,7 @@ const predictionFormValidators = [
   body('percentile')
     .trim()
     .notEmpty()
-    .withMessage('MCA CET percentile is required')
+    .withMessage('Percentile is required')
     .isFloat({ min: 0, max: 100 })
     .withMessage('Percentile must be between 0 and 100'),
 

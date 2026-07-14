@@ -27,12 +27,44 @@ function validateEnv() {
 
 validateEnv();
 
+/**
+ * Normalizes APP_SUBDIRECTORY_BASE_PATH defensively — treats
+ * unset, empty, whitespace-only, or the literal strings
+ * "undefined"/"null" (which can end up in an env var by mistake,
+ * e.g. via a hosting panel or a stray .env line) all as "not
+ * subdirectory-hosted", rather than trusting the raw value
+ * blindly. Also guarantees the result either is '' or starts
+ * with exactly one '/' and has no trailing slash, so url()
+ * can never produce a broken relative path from a malformed
+ * value like "admin" (missing leading slash) or "admin/" (extra
+ * trailing slash).
+ */
+function normalizeBasePath(raw) {
+  if (!raw) return '';
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed.toLowerCase() === 'undefined' || trimmed.toLowerCase() === 'null') {
+    return '';
+  }
+  const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  return withLeadingSlash.replace(/\/+$/, '');
+}
+
 const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   isProduction: process.env.NODE_ENV === 'production',
   port: parseInt(process.env.PORT, 10) || 3000,
-  appName: process.env.APP_NAME || 'VidyaNITI MCA CET Predictor',
+  appName: process.env.APP_NAME || 'VidyaNITI CAP Predictor',
   appBaseUrl: process.env.APP_BASE_URL || 'http://localhost:3000',
+
+  // Set this ONLY when deployed under a subdirectory via a
+  // reverse proxy / Passenger PassengerBaseURI (e.g. cPanel's
+  // "Setup Node.js App" with an Application URL like
+  // example.com/some-folder). Leave unset for domain-root or
+  // subdomain deployments (including local dev on localhost). See
+  // src/utils/url.js for what this enables — every internal
+  // link, redirect, and cookie path in the app is built through
+  // that helper using this value.
+  basePath: normalizeBasePath(process.env.APP_SUBDIRECTORY_BASE_PATH),
 
   supabase: {
     url: process.env.SUPABASE_URL,

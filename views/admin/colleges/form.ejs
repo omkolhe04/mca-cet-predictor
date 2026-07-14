@@ -7,19 +7,37 @@
 
 <div class="vn-admin-topbar">
   <h1 class="h4 mb-0"><%= mode === 'create' ? 'Add College' : 'Edit College' %></h1>
-  <a href="/admin/colleges" class="btn btn-sm btn-vn-outline">&larr; Back to Colleges</a>
+  <a href="<%= url('/admin/colleges') %>" class="btn btn-sm btn-vn-outline">&larr; Back to Colleges</a>
 </div>
 
-<form action="<%= mode === 'create' ? '/admin/colleges' : '/admin/colleges/' + college.id %>" method="POST" novalidate>
+<form action="<%= url(mode === 'create' ? '/admin/colleges' : '/admin/colleges/' + college.id) %>" method="POST" novalidate>
   <div class="vn-card mb-3">
     <h2 class="h6 mb-3">Basic Details</h2>
     <div class="row g-3">
+      <% if (mode === 'create') { %>
+        <div class="col-12 col-sm-4">
+          <label for="examTypeCode" class="form-label">Exam</label>
+          <select class="form-select <%= errors.examTypeCode ? 'is-invalid' : '' %>" id="examTypeCode" name="examTypeCode" required>
+            <option value="" disabled selected>Select exam</option>
+            <% examTypes.forEach(function (et) { %>
+              <option value="<%= et.code %>"><%= et.name %></option>
+            <% }) %>
+          </select>
+          <% if (errors.examTypeCode) { %><div class="invalid-feedback"><%= errors.examTypeCode.msg %></div><% } %>
+        </div>
+      <% } else { %>
+        <div class="col-12 col-sm-4">
+          <label class="form-label">Exam</label>
+          <input type="text" class="form-control" value="<%= college.examTypeName %>" disabled />
+          <div class="form-text">Set once at creation, cannot be changed.</div>
+        </div>
+      <% } %>
       <div class="col-12 col-sm-4">
         <label for="collegeCode" class="form-label">College Code</label>
         <input type="text" class="form-control <%= errors.collegeCode ? 'is-invalid' : '' %>" id="collegeCode" name="collegeCode" value="<%= college.collegeCode || '' %>" required />
         <% if (errors.collegeCode) { %><div class="invalid-feedback"><%= errors.collegeCode.msg %></div><% } %>
       </div>
-      <div class="col-12 col-sm-8">
+      <div class="col-12 col-sm-4">
         <label for="name" class="form-label">College Name</label>
         <input type="text" class="form-control <%= errors.name ? 'is-invalid' : '' %>" id="name" name="name" value="<%= college.name || '' %>" required />
         <% if (errors.name) { %><div class="invalid-feedback"><%= errors.name.msg %></div><% } %>
@@ -162,7 +180,7 @@
     <p class="small mb-2" style="color: var(--vn-ink-muted);">
       Add or update a year — submitting the same academic year again updates that row instead of duplicating it.
     </p>
-    <form action="/admin/colleges/<%= college.id %>/placements" method="POST">
+    <form action="<%= url('/admin/colleges/' + college.id + '/placements') %>" method="POST">
       <div class="row g-2">
         <div class="col-6 col-sm-3">
           <input type="text" class="form-control form-control-sm" name="academicYear" placeholder="2025-26" required />
@@ -218,7 +236,7 @@
     <p class="small mb-2" style="color: var(--vn-ink-muted);">
       Leave category as "All Categories" for the standard fee, or pick a specific category (e.g. TFWS) for a different rate.
     </p>
-    <form action="/admin/colleges/<%= college.id %>/fees" method="POST">
+    <form action="<%= url('/admin/colleges/' + college.id + '/fees') %>" method="POST">
       <div class="row g-2">
         <div class="col-6 col-sm-3">
           <select class="form-select form-select-sm" name="categoryId">

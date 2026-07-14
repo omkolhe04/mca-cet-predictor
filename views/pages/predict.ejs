@@ -8,7 +8,13 @@
       </p>
     </div>
 
-    <form action="/predict" method="POST" novalidate id="predictionForm">
+    <form
+      action="<%= url('/predict') %>"
+      method="POST"
+      novalidate
+      id="predictionForm"
+      data-colleges-api="<%= url('/api/colleges') %>"
+    >
       <!-- ================= Personal Details ================= -->
       <div class="vn-card mb-4">
         <h2 class="h5 mb-4">Personal Details</h2>
@@ -84,11 +90,30 @@
 
       <!-- ================= Exam & Category ================= -->
       <div class="vn-card mb-4">
-        <h2 class="h5 mb-4">Exam &amp; Category</h2>
+        <h2 class="h5 mb-1">Exam &amp; Category</h2>
+        <p class="small mb-3" style="color: var(--vn-ink-muted);">First, tell us which exam this prediction is for.</p>
+
+        <input type="hidden" id="examTypeCode" name="examTypeCode" value="<%= selectedExamCode %>" />
+
+        <div class="d-flex flex-wrap gap-2 mb-4" id="examTypeButtons">
+          <% examTypes.forEach(function (et) { %>
+            <button
+              type="button"
+              class="btn <%= et.code === selectedExamCode ? 'btn-vn-primary' : 'btn-vn-outline' %> exam-type-btn"
+              data-exam-code="<%= et.code %>"
+              data-exam-name="<%= et.name %>"
+            >
+              <%= et.name %>
+            </button>
+          <% }) %>
+        </div>
+        <% if (errors.examTypeCode) { %>
+          <div class="small mb-3" style="color: var(--vn-danger);"><%= errors.examTypeCode.msg %></div>
+        <% } %>
 
         <div class="row g-3">
           <div class="col-12 col-sm-6">
-            <label for="percentile" class="form-label">MCA CET Percentile</label>
+            <label for="percentile" class="form-label"><span id="percentileLabelText"><%= (examTypes.find(function(e){ return e.code === selectedExamCode; }) || {}).name || 'Exam' %></span> Percentile</label>
             <input
               type="text"
               class="form-control <%= errors.percentile ? 'is-invalid' : '' %>"
@@ -176,9 +201,9 @@
             <% if (errors.dreamCollegeId) { %>
               <div class="invalid-feedback"><%= errors.dreamCollegeId.msg %></div>
             <% } %>
-            <% if (colleges.length === 0) { %>
-              <div class="form-text">College list will be available once official cutoff data is loaded.</div>
-            <% } %>
+            <p class="form-text mb-0" id="dreamCollegeHint">
+              <% if (colleges.length === 0) { %>College list will be available once official cutoff data is loaded.<% } %>
+            </p>
           </div>
         </div>
       </div>
@@ -229,4 +254,4 @@
   </div>
 </section>
 
-<script src="/js/predict-form.js"></script>
+<script src="<%= url('/js/predict-form.js') %>"></script>

@@ -16,8 +16,10 @@ const adminImportController = require('../controllers/adminImport.controller');
 const adminUserController = require('../controllers/adminUser.controller');
 const adminNotificationController = require('../controllers/adminNotification.controller');
 const adminSliderController = require('../controllers/adminSlider.controller');
+const adminExamTypeController = require('../controllers/adminExamType.controller');
 
 const adminCollegeService = require('../services/adminCollege.service');
+const { url } = require('../utils/url');
 
 // 10MB cap comfortably covers a full year's cutoff JSON for one
 // exam type; kept in memory (not written to disk) since the
@@ -59,8 +61,14 @@ router.post('/logout', asyncHandler(adminAuthController.logout));
 // ---------------------------------------------------------
 router.use(requireAdminAuth);
 
-router.get('/', (req, res) => res.redirect('/admin/dashboard'));
+router.get('/', (req, res) => res.redirect(url('/admin/dashboard')));
 router.get('/dashboard', asyncHandler(adminDashboardController.showDashboard));
+
+router.get('/exam-types', asyncHandler(adminExamTypeController.list));
+router.get('/exam-types/new', asyncHandler(adminExamTypeController.showCreateForm));
+router.post('/exam-types', asyncHandler(adminExamTypeController.create));
+router.get('/exam-types/:id/edit', asyncHandler(adminExamTypeController.showEditForm));
+router.post('/exam-types/:id', asyncHandler(adminExamTypeController.update));
 
 router.get('/colleges', asyncHandler(adminCollegeController.list));
 router.get('/colleges/new', asyncHandler(adminCollegeController.showCreateForm));
@@ -68,8 +76,8 @@ router.post(
   '/colleges',
   collegeFormValidators,
   validateRequest('admin/colleges/form', async (req) => {
-    const { universities } = await adminCollegeService.getFormLookups();
-    return { title: 'Add College', mode: 'create', universities, college: req.body };
+    const { universities, examTypes } = await adminCollegeService.getFormLookups();
+    return { title: 'Add College', mode: 'create', universities, examTypes, college: req.body };
   }),
   asyncHandler(adminCollegeController.create)
 );

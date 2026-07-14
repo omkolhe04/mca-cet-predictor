@@ -7,7 +7,8 @@ const placementRepository = require('../repositories/placement.repository');
 const feeRepository = require('../repositories/fee.repository');
 const cutoffRepository = require('../repositories/cutoff.repository');
 const categoryRepository = require('../repositories/category.repository');
-const { CAP_ROUNDS } = require('../utils/constants');
+const examTypeRepository = require('../repositories/examType.repository');
+const { generateRoundCodes } = require('../utils/constants');
 
 const STANDARD_FEE_KEY = 'STANDARD';
 
@@ -19,7 +20,7 @@ const STANDARD_FEE_KEY = 'STANDARD';
  * this college/year are included — an empty category row would
  * add nothing but clutter.
  */
-function buildCutoffTables(branches, cutoffRows, categoryById) {
+function buildCutoffTables(branches, cutoffRows, categoryById, roundCodes) {
   const byBranch = new Map();
   for (const row of cutoffRows) {
     if (!byBranch.has(row.branch_id)) {
@@ -48,7 +49,7 @@ function buildCutoffTables(branches, cutoffRows, categoryById) {
     const rows = categoryIds.map((categoryId) => {
       const category = categoryById.get(categoryId);
       const roundsForCategory = byCategory.get(categoryId);
-      const cells = CAP_ROUNDS.map((roundCode) => {
+      const cells = roundCodes.map((roundCode) => {
         const row = roundsForCategory.get(roundCode);
         if (!row) return null;
         return {
@@ -103,13 +104,20 @@ async function getCollegeDetail(collegeId) {
     return null;
   }
 
-  const [university, branches, placementRows, feeRows, allCategories] = await Promise.all([
+  const [university, branches, placementRows, feeRows, allCategories, examType] = await Promise.all([
     college.university_id ? universityRepository.findById(college.university_id) : null,
     collegeBranchRepository.findActiveByCollegeIds([collegeId]),
     placementRepository.findByCollegeIds([collegeId]),
     feeRepository.findAllByCollegeId(collegeId),
     categoryRepository.findAll(),
+    examTypeRepository.findById(college.exam_type_id),
   ]);
+
+  // A college's CAP round count follows its own exam type (e.g.
+  // 4 rounds for an MCA CET college, 3 for an MBA CET college) —
+  // never a hardcoded assumption. Falls back to 4 only if the
+  // exam type record is somehow missing.
+  const roundCodes = generateRoundCodes(examType ? examType.cap_rounds : 4);
 
   const categoryById = new Map(allCategories.map((c) => [c.id, c]));
 
@@ -119,7 +127,7 @@ async function getCollegeDetail(collegeId) {
   const branchIds = branches.map((b) => b.id);
   const latestYear = branchIds.length > 0 ? await cutoffRepository.findLatestYear(branchIds) : null;
   const cutoffRows = latestYear ? await cutoffRepository.findByBranchesAndYear(branchIds, latestYear) : [];
-  const cutoffTables = buildCutoffTables(branches, cutoffRows, categoryById);
+  const cutoffTables = buildCutoffTables(branches, cutoffRows, categoryById, roundCodes);
 
   // Union of every category that appears in any branch's table,
   // sorted by display order — feeds the single category filter
@@ -144,6 +152,7 @@ async function getCollegeDetail(collegeId) {
     latestYear,
     cutoffTables,
     filterCategories,
+    roundCodes,
   };
 }
 

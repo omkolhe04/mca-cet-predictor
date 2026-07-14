@@ -2,13 +2,34 @@
   <h1 class="h4 mb-0">Import Cutoff Data</h1>
 </div>
 
+<ul class="nav nav-tabs mb-3">
+  <% allExamTypes.forEach(function (et) { %>
+    <li class="nav-item">
+      <a
+        class="nav-link <%= et.id === examType.id ? 'active' : '' %>"
+        href="<%= url('/admin/import?exam=' + et.code) %>"
+      >
+        <%= et.name %>
+      </a>
+    </li>
+  <% }) %>
+</ul>
+
 <div class="vn-card mb-3">
   <p class="small mb-3" style="color: var(--vn-ink-muted);">
     Upload a CAP cutoff JSON file. Safe to re-run — colleges, branches, and cutoff rows are
     all updated in place rather than duplicated, so uploading the same file twice, or a
     corrected version of it, is never a problem.
   </p>
-  <form action="/admin/import" method="POST" enctype="multipart/form-data">
+  <form action="<%= url('/admin/import') %>" method="POST" enctype="multipart/form-data">
+    <div class="mb-3" style="max-width: 300px;">
+      <label for="examTypeCode" class="form-label">This file is for</label>
+      <select class="form-select" id="examTypeCode" name="examTypeCode">
+        <% allExamTypes.forEach(function (et) { %>
+          <option value="<%= et.code %>" <%= et.id === examType.id ? 'selected' : '' %>><%= et.name %></option>
+        <% }) %>
+      </select>
+    </div>
     <div class="mb-3">
       <label for="cutoffFile" class="form-label">Cutoff JSON File</label>
       <input type="file" class="form-control" id="cutoffFile" name="cutoffFile" accept="application/json" required />
@@ -108,7 +129,7 @@
               <td><%= batch.cutoffsUpserted %></td>
               <td class="text-end">
                 <form
-                  action="/admin/import/<%= batch.id %>/delete"
+                  action="<%= url('/admin/import/' + batch.id + '/delete') %>"
                   method="POST"
                   onsubmit="return confirm('Delete all cutoff data from &quot;<%= batch.filename %>&quot;? This cannot be undone.');"
                 >
@@ -142,10 +163,11 @@
 
   <form
     id="resetDataForm"
-    action="/admin/import/reset-all"
+    action="<%= url('/admin/import/reset-all') %>"
     method="POST"
-    onsubmit="return confirm('This will permanently delete ALL college and cutoff data. Are you absolutely sure?');"
+    onsubmit="return confirm('This will permanently delete ALL college and cutoff data for <%= resetPreview.examTypeName %>. Are you absolutely sure?');"
   >
+    <input type="hidden" name="examTypeCode" value="<%= resetPreview.examType.code %>" />
     <div class="mb-3" style="max-width: 360px;">
       <label for="confirmText" class="form-label small">
         Type <strong><%= resetPreview.requiredConfirmationText %></strong> to confirm:
@@ -153,7 +175,7 @@
       <input type="text" class="form-control" id="confirmText" name="confirmText" autocomplete="off" />
     </div>
     <button type="submit" id="resetDataButton" class="btn btn-sm" style="background-color: var(--vn-danger); color: white;" disabled>
-      Delete All Exam Data
+      Delete All <%= resetPreview.examTypeName %> Data
     </button>
   </form>
 </div>
