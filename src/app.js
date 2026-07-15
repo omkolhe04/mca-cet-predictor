@@ -17,23 +17,7 @@ const routes = require('./routes');
 
 const app = express();
 
-// ---------------------------------------------------------
-// Subdirectory hosting fix (cPanel/Passenger)
-// ---------------------------------------------------------
-// When this app is deployed under a subdirectory via Passenger's
-// PassengerBaseURI (e.g. cPanel's "Setup Node.js App" with an
-// Application URL like example.com/some-folder), Passenger is
-// supposed to strip that prefix before forwarding the request to
-// this app. In practice, some cPanel/Passenger configurations
-// fail to strip it specifically for the bare base-directory
-// request (both with and without a trailing slash), while still
-// stripping it correctly for every deeper path — meaning
-// /some-folder/predict works fine, but /some-folder/ itself 404s.
-//
-// This rewrites the bare base-path request to '/' before routing,
-// and is a no-op everywhere else. Only takes effect if
-// APP_SUBDIRECTORY_BASE_PATH is set (leave unset for domain-root
-// or subdomain deployments, where this never applies).
+
 if (env.basePath) {
   const base = env.basePath;
   app.use((req, res, next) => {
